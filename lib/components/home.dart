@@ -9,6 +9,29 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'future_helper.dart';
 import 'package:intl/intl.dart';
 
+List<Car> onFilter(FilterCar filter, List<Car> cars) {
+  return cars.where((element) {
+    return withinDateRange(
+        element.car_model_year, filter.startYear, filter.endYear) &&
+        isOfGender(element.gender, filter.gender) &&
+        withinCountries(element.country, filter.countries) &&
+        hasColor(element.car_color, filter.colors);
+  }).toList();
+
+}
+
+bool withinDateRange(int carDate, int startYear, int endYear) =>
+    carDate >= startYear && carDate <= endYear;
+bool isOfGender(String carGender, String filterGender) =>
+    carGender == null ||
+        carGender.toLowerCase() == filterGender.toLowerCase();
+bool withinCountries(String country, List<String> countries) =>
+    country == null ||
+        countries.map((e) => e.toLowerCase()).contains(country.toLowerCase());
+bool hasColor(String color, List<String> colors) =>
+    color == null ||
+        colors.map((e) => e.toLowerCase()).contains(color.toLowerCase());
+
 class MyHomepage extends StatefulWidget {
   @override
   _MyHomepageState createState() => _MyHomepageState();
@@ -34,29 +57,13 @@ class _MyHomepageState extends State<MyHomepage> {
 
   List<FilterCar> fc = [];
 
-  onFilter(FilterCar filter) {
+  _onFilter(FilterCar filter, List<Car> cars) {
     setState(() {
-      filteredCars = availableCars.where((element) {
-        return withinDateRange(
-                element.car_model_year, filter.startYear, filter.endYear) &&
-            isOfGender(element.gender, filter.gender) &&
-            withinCountries(element.country, filter.countries) &&
-            hasColor(element.car_color, filter.colors);
-      }).toList();
+      filteredCars = onFilter(filter, cars);
     });
   }
 
-  bool withinDateRange(int carDate, int startYear, int endYear) =>
-      carDate >= startYear && carDate <= endYear;
-  bool isOfGender(String carGender, String filterGender) =>
-      carGender == null ||
-      carGender.toLowerCase() == filterGender.toLowerCase();
-  bool withinCountries(String country, List<String> countries) =>
-      country == null ||
-      countries.map((e) => e.toLowerCase()).contains(country.toLowerCase());
-  bool hasColor(String color, List<String> colors) =>
-      color == null ||
-      colors.map((e) => e.toLowerCase()).contains(color.toLowerCase());
+
 
   @override
   void initState() {
@@ -73,7 +80,7 @@ class _MyHomepageState extends State<MyHomepage> {
         appBar: AppBar(
           backgroundColor: Color(0xFF333333),
           title: Text(
-            'Filtered App',
+            'Neville Chukumah',
             style: TextStyle(color: Colors.white),
           ),
           elevation: 1,
@@ -100,7 +107,7 @@ class _MyHomepageState extends State<MyHomepage> {
                                 FilterCar filter = fc[index];
                                 return GestureDetector(
                                   onTap: () {
-                                    onFilter(filter);
+                                    _onFilter(filter, availableCars);
                                   },
                                   child: FilterItem(
                                       color: Color(0xFF333333),

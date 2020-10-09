@@ -5,26 +5,18 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
+import 'package:filteredapp/components/home.dart';
+import 'package:filteredapp/models/Cars.dart';
+import 'package:filteredapp/models/Filtercar.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:filteredapp/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('Check length of filter and verify first name', () {
+    final cars = [
+      Car(id: 1, first_name: 'Neville', last_name: 'Chukumah', car_model: 'Suzuki', car_color: 'red', car_model_year: 2000, country: 'Nigeria', email: 'neville.chukumah@gmail.com', job_title: 'Flutter Developer', gender: 'Male', bio: 'pushing strong')];
+    final filter = FilterCar(id: 1, startYear: 1990, endYear: 2005, gender: 'male', countries: ['Nigeria', 'USA'], colors: ['red', 'green']);
+    final result = onFilter(filter, cars);
+    expect(result.length, 1);
+    expect(result.first.first_name, 'Neville');
   });
 }
