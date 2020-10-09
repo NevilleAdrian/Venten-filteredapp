@@ -13,25 +13,45 @@ class MyHomepage extends StatefulWidget {
 }
 
 class _MyHomepageState extends State<MyHomepage> {
-
   Future<List<Car>> futureCars;
   NetworkHelper carNetworkHelper = NetworkHelper();
 
   Future<List<Car>> futureTask() async {
     var filter = await carNetworkHelper.getCarFilter();
-    var result = await rootBundle.loadString("assets/venten/car_ownsers_data.csv");
+    var result =
+        await rootBundle.loadString("assets/venten/car_ownsers_data.csv");
     var data = CsvToListConverter().convert(result);
-    List<Car> cars =  Car().createCars(data);
+    List<Car> cars = Car().createCars(data);
     setState(() {
       fc = filter;
       availableCars = cars;
+      filteredCars = cars;
     });
     return Future.value(cars);
   }
 
-
   List<FilterCar> fc = [];
 
+  onFilter(FilterCar filter) {
+    setState(() {
+      filteredCars = availableCars.where((element) {
+        return withinDateRange(
+                element.car_model_year, filter.startYear, filter.endYear) &&
+            isOfGender(element.gender, filter.gender) &&
+            withinCountries(element.country, filter.countries) &&
+            hasColor(element.car_color, filter.colors);
+      }).toList();
+    });
+  }
+
+  bool withinDateRange(int carDate, int startYear, int endYear) =>
+      carDate >= startYear && carDate <= endYear;
+  bool isOfGender(String carGender, String filterGender) =>
+      carGender.toLowerCase() == filterGender.toLowerCase();
+  bool withinCountries(String country, List<String> countries) =>
+      countries.map((e) => e.toLowerCase()).contains(country.toLowerCase());
+  bool hasColor(String color, List<String> colors) =>
+      colors.map((e) => e.toLowerCase()).contains(color.toLowerCase());
 
   @override
   void initState() {
@@ -40,76 +60,123 @@ class _MyHomepageState extends State<MyHomepage> {
   }
 
   List<Car> availableCars = List<Car>();
+  List<Car> filteredCars = List<Car>();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            appBar: AppBar(
-              title: Text('Filtered'),
-            ),
-            body: FutureHelper<List<Car>>(
-                task: futureCars,
-                builder: (context, data) {
-                List<Car> cars =  data;
-                  print('data${cars.first.last_name}');
-                  return Column(
-                    children: <Widget>[
-                    Expanded(
-                      child:   ListView.builder(
-                          itemCount: fc.length,
-                          itemBuilder: (_, int index) {
-                            FilterCar filter = fc[index];
-                            return Column(
+      appBar: AppBar(
+        title: Text('Filtered'),
+      ),
+      body: FutureHelper<List<Car>>(
+          task: futureCars,
+          builder: (context, data) {
+            List<Car> cars = data;
+            print('data${cars.first.last_name}');
+            return Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: fc.length,
+                      itemBuilder: (_, int index) {
+                        FilterCar filter = fc[index];
+                        return GestureDetector(
+                            onTap: () {
+                              onFilter(filter);
+                            },
+                            child: Column(
                               children: <Widget>[
-                                CarDetail(title: 'Date Range', description: '${filter.startYear} - ${filter.endYear} '),
-                                CarDetail(title: 'Gender', description: filter.gender),
-                                CarDetail(title: 'Countries', description: filter.countries?.join(',')),
-                                CarDetail(title: 'Color', description: filter.colors?.join(',')),
-
+                                CarDetail(
+                                  title: 'Date Range',
+                                  description:
+                                      '${filter.startYear} - ${filter.endYear} ',
+                                ),
+                                CarDetail(
+                                    title: 'Gender',
+                                    description: filter.gender),
+                                CarDetail(
+                                    title: 'Countries',
+                                    description: filter.countries?.join(',')),
+                                CarDetail(
+                                    title: 'Color',
+                                    description: filter.colors?.join(',')),
                               ],
-                            );
-                          }
-                      ),
-                    ),
-                  Expanded(
-                      child: ListView.builder(
-                          itemCount: cars.length,
-                          itemBuilder: (_, int index) {
-                            Car car = cars[index];
-                            return Container(
-                              child: Column(
-                                children: <Widget>[
-                                  CarDetail(title: 'Full Name', description: '${car.first_name} ${car.last_name}',),
-                                  CarDetail(title: 'Email', description: car.email,),
-                                  CarDetail(title: 'Country', description: car.country,),
-                                  CarDetail(title: 'Car Make, Color and Year', description: '${car.car_model}, ${car.car_color} & ${car.car_color}',),
-                                  CarDetail(title: 'Gender', description: car.gender,),
-                                  CarDetail(title: 'Job Title', description: car.job_title,),
-                                  CarDetail(title: 'Bio', description: car.bio,),
-                                ],
-                              ),
-                            );
-                          }
-
-                      )
-                  )
-                    ],
-                  );
-                }),
-        ));
+                            ));
+                      }),
+                ),
+                Expanded(
+                    child: filteredCars.length == 0 ? Text("no item found", style: TextStyle(color: Colors.black),) : ListView.builder(
+                        itemCount: filteredCars.length,
+                        itemBuilder: (_, int index) {
+                          Car car = filteredCars[index];
+                          return Container(
+                            child: Column(
+                              children: <Widget>[
+                                CarDetail(
+                                  title: 'Full Name',
+                                  description:
+                                      '${car.first_name} ${car.last_name}',
+                                ),
+                                CarDetail(
+                                  title: 'Email',
+                                  description: car.email,
+                                ),
+                                CarDetail(
+                                  title: 'Country',
+                                  description: car.country,
+                                ),
+                                CarDetail(
+                                  title: 'Car Make, Color and Year',
+                                  description:
+                                      '${car.car_model}, ${car.car_color} & ${car.car_color}',
+                                ),
+                                CarDetail(
+                                  title: 'Gender',
+                                  description: car.gender,
+                                ),
+                                CarDetail(
+                                  title: 'Job Title',
+                                  description: car.job_title,
+                                ),
+                                CarDetail(
+                                  title: 'Bio',
+                                  description: car.bio,
+                                ),
+                              ],
+                            ),
+                          ) ;
+                        }))
+              ],
+            );
+          }),
+    ));
   }
 }
 
 class CarDetail extends StatelessWidget {
   final String title;
   final String description;
-  const CarDetail({ this.title, this.description}) ;
+  const CarDetail({this.title, this.description});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Text(title),
       title: Text(description),
+    );
+  }
+}
+
+class FilterItem extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey,
+        ),
+        borderRadius: BorderRadius.circular(20)
+      ),
     );
   }
 }
