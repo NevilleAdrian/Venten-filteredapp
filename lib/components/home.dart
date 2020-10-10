@@ -80,7 +80,7 @@ class _MyHomepageState extends State<MyHomepage> {
         appBar: AppBar(
           backgroundColor: Color(0xFF333333),
           title: Text(
-            'Neville Chukumah',
+            'Filtered Cars',
             style: TextStyle(color: Colors.white),
           ),
           elevation: 1,
