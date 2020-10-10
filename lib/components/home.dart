@@ -23,13 +23,13 @@ List<Car> onFilter(FilterCar filter, List<Car> cars) {
 bool withinDateRange(int carDate, int startYear, int endYear) =>
     carDate >= startYear && carDate <= endYear;
 bool isOfGender(String carGender, String filterGender) =>
-    carGender == null ||
+    filterGender == null || filterGender == '' || carGender == ''  || carGender == null ||
         carGender.toLowerCase() == filterGender.toLowerCase();
 bool withinCountries(String country, List<String> countries) =>
-    country == null ||
+    country == null  || country == ''  || countries.join(',') == '' ||  countries == null ||
         countries.map((e) => e.toLowerCase()).contains(country.toLowerCase());
 bool hasColor(String color, List<String> colors) =>
-    color == null ||
+    color == null  ||  color == ''  ||  colors.join(',') == '' || colors == null ||
         colors.map((e) => e.toLowerCase()).contains(color.toLowerCase());
 
 class MyHomepage extends StatefulWidget {
@@ -57,9 +57,10 @@ class _MyHomepageState extends State<MyHomepage> {
 
   List<FilterCar> fc = [];
 
-  _onFilter(FilterCar filter, List<Car> cars) {
+  _onFilter(FilterCar filter, List<Car> cars, int index) {
     setState(() {
       filteredCars = onFilter(filter, cars);
+      currentIndex = index;
     });
   }
 
@@ -73,9 +74,20 @@ class _MyHomepageState extends State<MyHomepage> {
 
   List<Car> availableCars = List<Car>();
   List<Car> filteredCars = List<Car>();
+  int currentIndex;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0XFF257ACF),
+          onPressed: () {
+            setState(() {
+              filteredCars = availableCars;
+            });
+          },
+          child: Icon(Icons.refresh) ,
+
+      ),
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Color(0xFF333333),
@@ -96,7 +108,7 @@ class _MyHomepageState extends State<MyHomepage> {
                     child: Column(
                       children: <Widget>[
                         Container(
-                          height: 220,
+                          height: 260,
                           child: ListView.separated(
                               separatorBuilder: (_, __) => SizedBox(
                                     width: 20,
@@ -107,9 +119,11 @@ class _MyHomepageState extends State<MyHomepage> {
                                 FilterCar filter = fc[index];
                                 return GestureDetector(
                                   onTap: () {
-                                    _onFilter(filter, availableCars);
+                                    _onFilter(filter, availableCars, index);
+
                                   },
                                   child: FilterItem(
+                                    isActive: currentIndex == index,
                                       color: Color(0xFF333333),
                                       dateRange:
                                           '${filter.startYear} - ${filter.endYear} ',
@@ -137,13 +151,11 @@ class _MyHomepageState extends State<MyHomepage> {
                                       itemCount: filteredCars.length,
                                       itemBuilder: (_, int index) {
                                         Car car = filteredCars[index];
-                                        return CarDetail2(
-                                          fullName:
-                                              '${car.first_name} ${car.last_name}',
+                                        return CarDetail(
+                                          fullName:'${car.first_name} ${car.last_name}',
                                           email: car.email,
                                           country: car.country,
-                                          extras:
-                                              '${car.car_model}, ${car.car_color} & ${car.car_color}',
+                                          extras:'${car.car_model}, ${car.car_model_year} & ${car.car_color}',
                                           gender: car.gender,
                                           jobTitle: car.job_title,
                                           bio: car.bio,
@@ -157,27 +169,9 @@ class _MyHomepageState extends State<MyHomepage> {
   }
 }
 
-class CarDetail extends StatelessWidget {
-  final String title;
-  final String description;
-  const CarDetail({this.title, this.description});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Text(
-        title,
-        style: kTextStyle,
-      ),
-      title: Text(
-        description,
-        style: kTextStyle,
-      ),
-    );
-  }
-}
 
 class FilterItem extends StatelessWidget {
+  final bool isActive;
   final Color color;
   final String dateRange;
   final String gender;
@@ -185,13 +179,13 @@ class FilterItem extends StatelessWidget {
   final String colors;
 
   FilterItem(
-      {this.color, this.dateRange, this.gender, this.countries, this.colors});
+      {this.color, this.dateRange, this.gender, this.countries, this.colors, this.isActive});
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+          BoxDecoration(color: isActive ? Color(0xFF333333) : Color(0xFF333333).withOpacity(0.5), borderRadius: BorderRadius.circular(20)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +231,7 @@ class FilterItem extends StatelessWidget {
   }
 }
 
-class CarDetail2 extends StatelessWidget {
+class CarDetail extends StatelessWidget {
   final String fullName;
   final String email;
   final String country;
@@ -246,7 +240,7 @@ class CarDetail2 extends StatelessWidget {
   final String bio;
   final String extras;
 
-  CarDetail2(
+  CarDetail(
       {this.fullName,
       this.email,
       this.country,
@@ -285,27 +279,35 @@ class CarDetail2 extends StatelessWidget {
               SizedBox(
                 width: 20,
               ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    fullName,
-                    style: kTextStyle.copyWith(
-                        fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  Text(
-                    jobTitle ?? '',
-                    style: kTextStyle.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white.withOpacity(0.5)),
-                  ),
-                ],
-              ),
+             Expanded(
+                 child:  Column(
+                   mainAxisAlignment: MainAxisAlignment.start,
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: <Widget>[
+                     SingleChildScrollView(
+                       scrollDirection: Axis.horizontal,
+                       child: Text(
+                         fullName,
+                         style: kTextStyle.copyWith(
+                             fontSize: 18, fontWeight: FontWeight.w800),
+                       ),
+                     ),
+                     SizedBox(
+                       height: 10.0,
+                     ),
+                     SingleChildScrollView(
+                       scrollDirection: Axis.horizontal,
+                       child: Text(
+                         jobTitle ?? '',
+                         style: kTextStyle.copyWith(
+                             fontSize: 14,
+                             fontWeight: FontWeight.w800,
+                             color: Colors.white.withOpacity(0.5)),
+                       ),
+                     )
+                   ],
+                 ),
+             )
             ],
           ),
           SizedBox(

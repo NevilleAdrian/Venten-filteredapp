@@ -27,6 +27,12 @@ class MyApp extends StatelessWidget {
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        fontFamily: "Poppins",
+        textTheme: Theme.of(context)
+            .textTheme
+            .apply(fontFamily: 'Poppins'),
+        primaryTextTheme: Theme.of(context).textTheme.apply(fontFamily: 'Poppins'),
+        accentTextTheme: Theme.of(context).textTheme.apply(fontFamily: 'Poppins'),
       ),
       home: MyHomepage(),
     );
