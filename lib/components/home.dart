@@ -38,6 +38,7 @@ class MyHomepage extends StatefulWidget {
 }
 
 class _MyHomepageState extends State<MyHomepage> {
+  ScrollController _controller = ScrollController();
   Future<List<Car>> futureCars;
   NetworkHelper carNetworkHelper = NetworkHelper();
 
@@ -62,6 +63,7 @@ class _MyHomepageState extends State<MyHomepage> {
       filteredCars = onFilter(filter, cars);
       currentIndex = index;
     });
+    _controller.animateTo(0.0, duration: Duration(microseconds: 2000), curve: Curves.ease);
   }
 
 
@@ -83,7 +85,9 @@ class _MyHomepageState extends State<MyHomepage> {
           onPressed: () {
             setState(() {
               filteredCars = availableCars;
+              currentIndex = null;
             });
+            _controller.animateTo(0.0, duration: Duration(microseconds: 2000), curve: Curves.ease);
           },
           child: Icon(Icons.refresh) ,
 
@@ -145,6 +149,7 @@ class _MyHomepageState extends State<MyHomepage> {
                                       ),
                                     )
                                   : ListView.separated(
+                                controller: _controller,
                                       separatorBuilder: (_, __) => SizedBox(
                                             height: 20,
                                           ),
@@ -264,8 +269,8 @@ class CarDetail extends StatelessWidget {
             children: <Widget>[
               Container(
                   padding: EdgeInsets.all(10.0),
-                  height: 40,
-                  width: 40,
+                  height: 50,
+                  width: 50,
                   decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(8)),
@@ -273,7 +278,7 @@ class CarDetail extends StatelessWidget {
                     child: Icon(
                       Icons.perm_identity,
                       color: Colors.white,
-                      size: 19,
+                      size: 22,
                     ),
                   )),
               SizedBox(
@@ -293,7 +298,7 @@ class CarDetail extends StatelessWidget {
                        ),
                      ),
                      SizedBox(
-                       height: 10.0,
+                       height: 3.0,
                      ),
                      SingleChildScrollView(
                        scrollDirection: Axis.horizontal,
